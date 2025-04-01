@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"soybean-admin-go/config"
 	"soybean-admin-go/db"
+	"soybean-admin-go/middleware"
 	"soybean-admin-go/router"
 	"time"
 )
@@ -13,6 +14,7 @@ func main() {
 	time.Local = Loc
 
 	app := gin.Default()
+	app.Use(middleware.Cors())
 	db.Init()
 	router.Init(app)
 	err := app.Run(":8081")
