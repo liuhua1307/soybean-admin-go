@@ -5,15 +5,16 @@ import (
 	"soybean-admin-go/api"
 	"soybean-admin-go/api/card"
 	"soybean-admin-go/api/goods"
+	"soybean-admin-go/api/location"
 	"soybean-admin-go/api/orders"
 	"soybean-admin-go/api/system_msg"
 )
 
 func Init(r *gin.Engine) {
 	// 使用 cookie 存储会话数据
-	r.POST("/auth/login", api.Login)
-	r.GET("/auth/refreshToken", api.RefreshToken)
-	g := r.Group("", api.AuthMiddleware())
+	r.POST("/api/auth/login", api.Login)
+	r.GET("/api/auth/refreshToken", api.RefreshToken)
+	g := r.Group("/api", api.AuthMiddleware())
 	{
 		g.GET("/auth/getUserInfo", api.GetUserInfo)
 
@@ -39,6 +40,7 @@ func Init(r *gin.Engine) {
 		g.POST("/orderManage/order", orders.AddOrder)
 		g.PUT("/orderManage/order", orders.UpdateOrder)
 		g.DELETE("/orderManage/order/:id", orders.DeleteOrder)
+		g.GET("/orderManage/getRoute/:id", location.GotLocation)
 
 		g.GET("/route/getReactUserRoutes", api.GetSuperRouter)
 		gr := g.Group("/data")

@@ -9,6 +9,7 @@ import (
 	"soybean-admin-go/db/gen"
 	"soybean-admin-go/db/model"
 	"soybean-admin-go/utils/log"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -211,22 +212,21 @@ func UpdateOrder(ctx *gin.Context) {
 
 func DeleteOrder(ctx *gin.Context) {
 	var (
-		tx        = gen.Q.Begin()
-		orderInfo OrderInfo
+		tx = gen.Q.Begin()
 	)
-	err := ctx.BindJSON(&orderInfo)
+	IDI64, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
-		ctx.JSON(400, gin.H{"error": "Invalid json params"})
+		ctx.JSON(400, gin.H{"error": "Invalid id"})
 		return
 	}
-	_, err = tx.Order.WithContext(ctx).Where(tx.Order.ID.Eq(orderInfo.ID)).Delete()
+	_, err = tx.Order.WithContext(ctx).Where(tx.Order.ID.Eq(IDI64)).Delete()
 	if err != nil {
 		tx.Rollback()
 		config.Logger.Error("Failed to delete order", log.Field{Key: "error", Value: err})
 		ctx.JSON(500, gin.H{"error": "Failed to delete order"})
 		return
 	}
-	_, err = tx.CustomerInfo.WithContext(ctx).Where(tx.CustomerInfo.OrderID.Eq(orderInfo.ID)).Delete()
+	_, err = tx.CustomerInfo.WithContext(ctx).Where(tx.CustomerInfo.OrderID.Eq(IDI64)).Delete()
 	if err != nil {
 		tx.Rollback()
 		config.Logger.Error("Failed to delete customer info", log.Field{Key: "error", Value: err})
@@ -257,10 +257,10 @@ type OrderInfo struct {
 }
 
 type ItemsInfo struct {
-	ID       int64   `json:"id"`
-	Quantity int32   `gorm:"column:quantity" json:"quantity"`
-	Name     string  `gorm:"column:name;not null" json:"name"`
-	Weight   float32 `gorm:"column:weight;not null" json:"weight"`
+	ID       int64  `json:"id"`
+	Quantity int32  `gorm:"column:quantity" json:"quantity"`
+	Name     string `gorm:"column:name;not null" json:"name"`
+	Weight   string `gorm:"column:weight;not null" json:"weight"`
 }
 
 func transferTimeStringToTime(timeString string) (time.Time, error) {
